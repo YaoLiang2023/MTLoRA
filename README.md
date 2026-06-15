@@ -45,6 +45,10 @@ This repository includes four MTLoRA structures:
 | **CTCM** | \(T = CD\) | Staged composition of two transformations. |
 | **DTSM** | \(T = C + D\) | Dual-path superposition for parallel subspace mixing. |
 
+### Practical initialization tip
+
+In practice, users may also try the following initialization strategy for MTLoRA: initialize the transformation matrix \(T\) as an identity matrix for all four structures, initialize the \(A\) matrix with Gaussian initialization, and initialize the \(B\) matrix as a zero matrix. This initialization preserves the initial behavior of the frozen backbone at the beginning of fine-tuning while allowing the transformation matrix to gradually learn task-adaptive subspace geometry. We have found that this strategy can often lead to better empirical performance, although the final effect may depend on the backbone, task, rank, learning rate, and random seed.
+
 ---
 
 ## 2. Repository Structure
