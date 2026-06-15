@@ -1,8 +1,8 @@
-# Matrix-Transformation Based Low-Rank Adaptation (MTLoRA): A Brain-Inspired Method for Parameter-Efficient Fine-Tuning
+# Matrix-Transformation based Low-Rank Adaptation (MTLoRA)
 
-This repository provides the official source code for the paper:
+This repository provides the source code for the paper:
 
-**Matrix-Transformation based Low-Rank Adaptation (MTLoRA): A brain-inspired method for parameter-efficient fine-tuning**  
+**Matrix-Transformation based Low-Rank Adaptation (MTLoRA): A Brain-Inspired Method for Parameter-Efficient Fine-Tuning**  
 Yao Liang, Yuwei Wang, Yang Li, Yi Zeng  
 Published in **Neural Networks**, 199:108642, 2026  
 DOI: https://doi.org/10.1016/j.neunet.2026.108642  
@@ -10,77 +10,67 @@ Preprint: https://arxiv.org/abs/2403.07440
 
 MTLoRA is a plug-compatible extension of LoRA for parameter-efficient fine-tuning. Instead of using the standard LoRA update
 
-```math
+$$
 \Delta W = BA,
-```
+$$
 
 MTLoRA introduces a learnable transformation matrix inside the low-rank subspace:
 
-```math
+$$
 \Delta W = BTA,
-```
+$$
 
-where `T` reshapes the low-rank coordinates through rotations, scalings, shears, metric learning, staged mixing, or parallel superposition. LoRA is recovered when `T = I`.
+where \(T\) reshapes the low-rank coordinates through rotations, scalings, shears, metric learning, staged mixing, or parallel superposition. LoRA is recovered when \(T = I\).
 
-The paper evaluates MTLoRA on three categories of tasks:
+This codebase is organized to support the experiments reported in the published Neural Networks article, including:
 
-- **Natural language understanding (NLU)**: GLUE with DeBERTaV3-base and RoBERTa-base.
-- **Natural language generation (NLG)**: E2E, DART, and WebNLG with GPT-2 Medium.
-- **Multimodal visual instruction tuning**: LLaVA-1.5-7B on VQAv2, GQA, ScienceQA, TextVQA, POPE, and MMBench.
+- **Natural Language Understanding (NLU)** experiments on GLUE.
+- **Natural Language Generation (NLG)** experiments on E2E, WebNLG, and DART.
+- **Multimodal visual instruction tuning** experiments based on LLaVA-1.5-7B.
 
-The code in this repository is intended to support reproducibility of the experiments reported in the published Neural Networks article. The multimodal part follows the LLaVA/DoRA visual instruction tuning pipeline and adds MTLoRA variants for vision-language fine-tuning.
+The NLU and NLG implementations were developed on top of the original LoRA codebase and were extended to support MTLoRA. The multimodal part follows the LLaVA/DoRA visual instruction tuning pipeline and integrates MTLoRA variants for vision-language fine-tuning.
 
 ---
 
 ## 1. Method Overview
 
-MTLoRA inserts a lightweight transformation matrix `T` into the low-rank update path. This adds only a small `O(r^2)` parameter and computation overhead while allowing the low-rank subspace to learn task-adaptive geometry.
+MTLoRA inserts a lightweight transformation matrix \(T\) into the low-rank update path. This adds only a small \(O(r^2)\) parameter and computation overhead while enabling the low-rank subspace to learn task-adaptive geometry.
 
 This repository includes four MTLoRA structures:
 
 | Variant | Transformation | Intuition |
 | --- | --- | --- |
-| **SHIM** | `T = C` | Free linear change of basis in the low-rank subspace. |
-| **ICFM** | `T = CC^T` | Positive-semidefinite metric / intrinsic correlation filtering. |
-| **CTCM** | `T = CD` | Staged composition of two transformations. |
-| **DTSM** | `T = C + D` | Dual-path superposition for parallel subspace mixing. |
+| **SHIM** | \(T = C\) | Free linear change of basis in the low-rank subspace. |
+| **ICFM** | \(T = CC^\top\) | Positive-semidefinite metric / intrinsic correlation filtering. |
+| **CTCM** | \(T = CD\) | Staged composition of two transformations. |
+| **DTSM** | \(T = C + D\) | Dual-path superposition for parallel subspace mixing. |
 
 ---
 
 ## 2. Repository Structure
 
-A typical repository layout is as follows:
+The repository is organized as follows:
 
 ```text
 MTLoRA-main/
-├── examples/
-│   ├── NLU/                         # Natural language understanding experiments
-│   └── NLG/                         # Natural language generation experiments
-├── transformation_matrix/           # MTLoRA transformation structures
+├── NLU/                         # Natural language understanding experiments
+├── NLG/                         # Natural language generation experiments
+├── visual_instruction_tuning/   # Multimodal LLaVA-1.5 visual instruction tuning
+├── transformation_matrix/       # MTLoRA transformation structures
 │   ├── SHIM/
 │   ├── ICFM/
 │   ├── CTCM/
 │   └── DTSM/
-├── visual_instruction_tuning/       # Multimodal LLaVA-1.5 visual instruction tuning
-│   ├── checkpoints/
-│   ├── playground/data/
-│   ├── peft/
-│   ├── eval_result/
-│   ├── SHIMLora_7b_bs16_r128_alpha256_seed47.sh
-│   ├── ICFMLora_7b_bs16_r128_alpha256_seed47.sh
-│   ├── CTCMLora_7b_bs16_r128_alpha256_seed47.sh
-│   ├── DTSMLora_7b_bs16_r128_alpha256_seed47.sh
-│   └── 7B_eval_mtlora.sh
 └── README.md
 ```
 
-The exact directory names may vary slightly depending on how the repository is packaged. Please adjust paths in the scripts accordingly.
+The three experimental directories, `NLU/`, `NLG/`, and `visual_instruction_tuning/`, are placed at the same level under the repository root.
 
 ---
 
-## 3. Using MTLoRA Structures in NLU and NLG Experiments
+## 3. Selecting an MTLoRA Structure
 
-For NLU and NLG experiments, choose one MTLoRA structure from `transformation_matrix/` and replace the corresponding `xtuning_layers.py` file in the task directory.
+For the NLU and NLG experiments, choose one MTLoRA structure from `transformation_matrix/` and replace the corresponding `xtuning_layers.py` file in the target task directory.
 
 For example, to use CTCM, copy:
 
@@ -91,12 +81,12 @@ transformation_matrix/CTCM/xtuning_layers.py
 to the following locations as needed:
 
 ```text
-examples/NLU/src/xtuninglib/xtuning_layers.py
-examples/NLU/src/transformers/models/roberta/xtuninglib/xtuning_layers.py
-examples/NLG/src/xtuninglib/xtuning_layers.py
+NLU/src/xtuninglib/xtuning_layers.py
+NLU/src/transformers/models/roberta/xtuninglib/xtuning_layers.py
+NLG/src/xtuninglib/xtuning_layers.py
 ```
 
-Use the analogous file under `transformation_matrix/SHIM/`, `transformation_matrix/ICFM/`, or `transformation_matrix/DTSM/` to run other variants.
+Use the analogous file under `transformation_matrix/SHIM/`, `transformation_matrix/ICFM/`, or `transformation_matrix/DTSM/` to run the other variants.
 
 ---
 
@@ -105,13 +95,15 @@ Use the analogous file under `transformation_matrix/SHIM/`, `transformation_matr
 The NLU experiments are located in:
 
 ```bash
-examples/NLU/
+NLU/
 ```
 
 ## 4. NLU Environment Setup
 
+Enter the NLU directory and create the environment:
+
 ```bash
-cd examples/NLU
+cd NLU
 conda env create -f environment.yml
 conda activate mtlora_nlu  # or the environment name defined in environment.yml
 pip install -e .
@@ -141,13 +133,15 @@ For **MRPC**, **RTE**, and **STS-B**, start from the MTLoRA-adapted MNLI checkpo
 The NLG experiments are located in:
 
 ```bash
-examples/NLG/
+NLG/
 ```
 
 ## 6. NLG Environment Setup
 
+Enter the NLG directory and install dependencies:
+
 ```bash
-cd examples/NLG
+cd NLG
 conda create -n mtlora_nlg python=3.8.13 -y
 conda activate mtlora_nlg
 pip install -r requirement.txt
@@ -696,7 +690,7 @@ These results support the central claim that learning geometry inside the low-ra
 ## 16. Reproducibility Notes
 
 - The commands above reproduce the main experimental workflow. Exact scores may vary slightly because of hardware, CUDA/PyTorch versions, random seeds, dataset versions, and external evaluation servers.
-- The repository does not redistribute third-party datasets, pretrained backbones, or benchmark annotations unless explicitly permitted by their original licenses. Please download them from the official sources listed above.
+- This repository does not redistribute third-party datasets, pretrained backbones, or benchmark annotations unless explicitly permitted by their original licenses. Please download them from the official sources listed above.
 - For fair comparison, keep the adaptation scope, rank, batch size, seeds, and evaluation protocol consistent across LoRA, DoRA, AdaLoRA, and MTLoRA variants.
 - When reporting results, specify the MTLoRA structure, rank, scaling factor, seed, backbone, and benchmark version.
 
@@ -705,6 +699,8 @@ These results support the central claim that learning geometry inside the low-ra
 ## 17. Acknowledgements
 
 This work was supported by the National Science and Technology Major Project under Grant No. 2022ZD0116202.
+
+The NLU and NLG code in this repository was developed based on the original LoRA codebase. We sincerely thank the LoRA authors and maintainers for releasing their implementation, which provided an important foundation for our MTLoRA implementation and experiments.
 
 The multimodal experiments build on the open-source LLaVA and DoRA visual instruction tuning ecosystems. We thank the authors and maintainers of these projects, as well as the creators of the datasets and benchmarks used in this work.
 
@@ -727,14 +723,14 @@ If you find this repository useful, please cite the published Neural Networks pa
 
 ```bibtex
 @article{liang2026matrix,
-  title   = {Matrix-Transformation based Low-Rank Adaptation (MTLoRA): A brain-inspired method for parameter-efficient fine-tuning},
-  author  = {Liang, Yao and Wang, Yuwei and Li, Yang and Zeng, Yi},
-  journal = {Neural Networks},
-  volume  = {199},
-  pages   = {108642},
-  year    = {2026},
-  doi     = {10.1016/j.neunet.2026.108642},
-  issn    = {0893-6080},
+  title     = {Matrix-Transformation based Low-Rank Adaptation (MTLoRA): A brain-inspired method for parameter-efficient fine-tuning},
+  author    = {Liang, Yao and Wang, Yuwei and Li, Yang and Zeng, Yi},
+  journal   = {Neural Networks},
+  volume    = {199},
+  pages     = {108642},
+  year      = {2026},
+  doi       = {10.1016/j.neunet.2026.108642},
+  issn      = {0893-6080},
   publisher = {Elsevier}
 }
 ```
