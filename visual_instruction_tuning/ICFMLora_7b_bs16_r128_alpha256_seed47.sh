@@ -6,9 +6,9 @@
 # distribution of this software and related documentation without an express
 # license agreement from NVIDIA CORPORATION is strictly prohibited.
 
-python llava/train/train_mem_dtsmlora.py \
+python llava/train/train_mem_icfmlora.py \
     --lora_enable True --lora_r 128 --lora_alpha 256 --mm_projector_lr 2e-5 \
-    --seed 9 \
+    --seed 47 \
     --model_name_or_path lmsys/vicuna-7b-v1.5 \
     --version v1 \
     --data_path ./playground/data/llava_v1_5_mix665k.json \
@@ -22,7 +22,7 @@ python llava/train/train_mem_dtsmlora.py \
     --image_aspect_ratio pad \
     --group_by_modality_length True \
     --bf16 True \
-    --output_dir ./checkpoints/dtsmlora-bs16-r128-alpha-256-seed9 \
+    --output_dir ./checkpoints/icfmlora-bs16-r128-alpha-256-seed47 \
     --num_train_epochs 1 \
     --per_device_train_batch_size 4 \
     --per_device_eval_batch_size 4 \
@@ -41,4 +41,4 @@ python llava/train/train_mem_dtsmlora.py \
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
-    > dtsmlora_train_bs16_r128_alpha256_seed9.log 2>&1 &
+    > icfmlora_train_bs16_r128_alpha256_seed47.log 2>&1 &
