@@ -1,4 +1,4 @@
-# Matrix-Transformation based Low-Rank Adaptation (MTLoRA)
+# Matrix-Transformation Based Low-Rank Adaptation (MTLoRA): A Brain-Inspired Method for Parameter-Efficient Fine-Tuning
 
 This repository provides the source code for the paper:
 
