@@ -223,7 +223,11 @@ class StableDropout(torch.nn.Module):
 class DebertaV2SelfOutput(nn.Module):
     def __init__(self, config):
         super().__init__()
-        self.dense = nn.Linear(config.hidden_size, config.hidden_size)
+        if config.apply_lora:
+            print("-----------------------enter DebertaV2SelfOutput xtuning-----------------------")
+            self.dense = xtuning.Linear(config.hidden_size, config.hidden_size, r=config.lora_r, xtuning_alpha=config.lora_alpha, merge_weights=False)
+        else:
+            self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.LayerNorm = LayerNorm(config.hidden_size, config.layer_norm_eps)
         self.dropout = StableDropout(config.hidden_dropout_prob)
 
